@@ -155,6 +155,15 @@ class CrmAuth {
 		if (strpos ( strtoupper ( $url ), "CRM5.DYNAMICS.COM" )) {
 			return "crmapac:dynamics.com";
 		}
+		if (strpos ( strtoupper ( $url ), "CRM6.DYNAMICS.COM" )) {
+			return "crmoce:dynamics.com";
+		}
+		if (strpos ( strtoupper ( $url ), "CRM7.DYNAMICS.COM" )) {
+			return "crmjpn:dynamics.com";
+		}
+		if (strpos ( strtoupper ( $url ), "CRM9.DYNAMICS.COM" )) {
+			return "crmgcc:dynamics.com";
+		}
 		
 		return "crmna:dynamics.com";
 	}
