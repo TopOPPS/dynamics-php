@@ -35,17 +35,23 @@ $url = $_POST['instance_url'];
 //Username format could be domain\\username or username in the form of an email
 $username = $_POST['username'];
 $password = $_POST["password"];
+
+$password = str_replace('"', "&quot;", $password);
+$password = str_replace("'", "&apos;", $password);
+$password = str_replace('<', "&lt;", $password);
+$password = str_replace('>', "&gt;", $password);
+$password = str_replace("&", "&amp;", $password);
+
 $crmAuth = new CrmAuth();
 
-// CRM Online
-//$authHeader = $crmAuth->GetHeaderOnline ($username, $password, $url);
-// End CRM Online
-
-// CRM On Premise - IFD
-$authHeader = $crmAuth->GetHeaderOnPremise($username, $password, $url);
-// End CRM On Premise - IFD
-
+$authHeader = $crmAuth->GetHeaderOnline ($username, $password, $url);
 $userid = WhoAmI ( $authHeader, $url );
+
+if ($userid == null) {
+	$authHeader = $crmAuth->GetHeaderOnPremise($username, $password, $url);
+	$userid = WhoAmI ( $authHeader, $url );
+}
+
 if ($userid == null) {
 	print "{}";
 }
