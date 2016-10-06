@@ -13,10 +13,10 @@ $authHeader = $crmAuth->GetHeaderOnline ( $username, $password, $url );
 // End CRM Online
 
 // CRM On Premise - IFD
-// $url = "https://org.domain.com/";
+// $url = $_POST['instance_url'];
 // //Username format could be domain\\username or username in the form of an email
-// $username = "username";
-// $password = "password";
+// $username = $_POST['username'];
+// $password = $_POST["password"];
 
 // $crmAuth = new CrmAuth();
 // $authHeader = $crmAuth->GetHeaderOnPremise($username, $password, $url);
@@ -48,7 +48,6 @@ function WhoAmI($authHeader, $url) {
 
 	$executeSoap = new CrmExecuteSoap ();
 	$response = $executeSoap->ExecuteSOAPRequest ( $authHeader, $xml, $url );
-
 	$responsedom = new DomDocument ();
 	$responsedom->loadXML ( $response );
 
