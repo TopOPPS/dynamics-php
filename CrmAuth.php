@@ -2,10 +2,10 @@
 
 // include "CrmAuthenticationHeader.php";
 class CrmAuth {
-	
+
 	/**
 	 * Gets a CRM Online SOAP header & expiration.
-	 * 
+	 *
 	 * @return CrmAuthenticationHeader An object containing the SOAP header and expiration date/time of the header.
 	 * @param String $username
 	 *        	Username of a valid CRM user.
@@ -18,7 +18,7 @@ class CrmAuth {
 		$url .= (substr ( $url, - 1 ) == '/' ? '' : '/');
 		$urnAddress = $this->GetUrnOnline ( $url );
 		$now = $_SERVER ['REQUEST_TIME'];
-		
+
 		$xml = "<s:Envelope xmlns:s=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:a=\"http://www.w3.org/2005/08/addressing\" xmlns:u=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd\">";
 		$xml .= "<s:Header>";
 		$xml .= "<a:Action s:mustUnderstand=\"1\">http://schemas.xmlsoap.org/ws/2005/02/trust/RST/Issue</a:Action>";
@@ -49,15 +49,15 @@ class CrmAuth {
 		$xml .= "</trust:RequestSecurityToken>";
 		$xml .= "</s:Body>";
 		$xml .= "</s:Envelope>";
-		
+
 		$headers = array (
 				"POST " . "/RST2.srf" . " HTTP/1.1",
 				"Host: " . "login.microsoftonline.com",
 				'Connection: Keep-Alive',
 				"Content-type: application/soap+xml; charset=UTF-8",
-				"Content-length: " . strlen ( $xml ) 
+				"Content-length: " . strlen ( $xml )
 		);
-		
+
 		$ch = curl_init ();
 		curl_setopt ( $ch, CURLOPT_URL, "https://login.microsoftonline.com/RST2.srf" );
 		curl_setopt ( $ch, CURLOPT_RETURNTRANSFER, 1 );
@@ -67,33 +67,33 @@ class CrmAuth {
 		curl_setopt ( $ch, CURLOPT_HTTPHEADER, $headers );
 		curl_setopt ( $ch, CURLOPT_POST, 1 );
 		curl_setopt ( $ch, CURLOPT_POSTFIELDS, $xml );
-		
+
 		$response = curl_exec ( $ch );
 		curl_close ( $ch );
-		
+
 		$responsedom = new DomDocument ();
 		$responsedom->loadXML ( $response );
-		
+
 		$cipherValues = $responsedom->getElementsbyTagName ( "CipherValue" );
 		$token1 = $cipherValues->item ( 0 )->textContent;
 		$token2 = $cipherValues->item ( 1 )->textContent;
-		
+
 		$keyIdentiferValues = $responsedom->getElementsbyTagName ( "KeyIdentifier" );
 		$keyIdentifer = $keyIdentiferValues->item ( 0 )->textContent;
-		
+
 		$tokenExpiresValues = $responsedom->getElementsbyTagName ( "Expires" );
 		$tokenExpires = $tokenExpiresValues->item ( 0 )->textContent;
-		
+
 		$authHeader = new CrmAuthenticationHeader ();
 		$authHeader->Expires = $tokenExpires;
 		$authHeader->Header = $this->CreateSoapHeaderOnline ( $url, $keyIdentifer, $token1, $token2 );
-		
+
 		return $authHeader;
 	}
-	
+
 	/**
 	 * Gets a CRM Online SOAP header.
-	 * 
+	 *
 	 * @return String The XML SOAP header to be used in future requests.
 	 * @param String $url
 	 *        	The Url of the CRM Online organization (https://org.crm.dynamics.com).
@@ -134,13 +134,13 @@ class CrmAuth {
 		$xml .= "</a:ReplyTo>";
 		$xml .= "<a:To s:mustUnderstand=\"1\">" . $url . "XRMServices/2011/Organization.svc</a:To>";
 		$xml .= "</s:Header>";
-		
+
 		return $xml;
 	}
-	
+
 	/**
 	 * Gets the correct URN Address based on the Online region.
-	 * 
+	 *
 	 * @return String URN Address.
 	 * @param String $url
 	 *        	The Url of the CRM Online organization (https://org.crm.dynamics.com).
@@ -164,13 +164,13 @@ class CrmAuth {
 		if (strpos ( strtoupper ( $url ), "CRM9.DYNAMICS.COM" )) {
 			return "crmgcc:dynamics.com";
 		}
-		
+
 		return "crmna:dynamics.com";
 	}
-	
+
 	/**
 	 * Gets a CRM On Premise SOAP header & expiration.
-	 * 
+	 *
 	 * @return CrmAuthenticationHeader An object containing the SOAP header and expiration date/time of the header.
 	 * @param String $username
 	 *        	Username of a valid CRM user.
@@ -185,7 +185,7 @@ class CrmAuth {
 		$now = $_SERVER ['REQUEST_TIME'];
 		$urnAddress = $url . "XRMServices/2011/Organization.svc";
 		$usernamemixed = $adfsUrl . "/13/usernamemixed";
-		
+
 		$xml = "<s:Envelope xmlns:s=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:a=\"http://www.w3.org/2005/08/addressing\">";
 		$xml .= "<s:Header>";
 		$xml .= "<a:Action s:mustUnderstand=\"1\">http://docs.oasis-open.org/ws-sx/ws-trust/200512/RST/Issue</a:Action>";
@@ -216,15 +216,15 @@ class CrmAuth {
 		$xml .= "</trust:RequestSecurityToken>";
 		$xml .= "</s:Body>";
 		$xml .= "</s:Envelope>";
-		
+
 		$headers = array (
 				"POST " . parse_url ( $usernamemixed, PHP_URL_PATH ) . " HTTP/1.1",
 				"Host: " . parse_url ( $adfsUrl, PHP_URL_HOST ),
 				'Connection: Keep-Alive',
 				"Content-type: application/soap+xml; charset=UTF-8",
-				"Content-length: " . strlen ( $xml ) 
+				"Content-length: " . strlen ( $xml )
 		);
-		
+
 		$ch = curl_init ();
 		curl_setopt ( $ch, CURLOPT_URL, $usernamemixed );
 		curl_setopt ( $ch, CURLOPT_RETURNTRANSFER, 1 );
@@ -234,54 +234,54 @@ class CrmAuth {
 		curl_setopt ( $ch, CURLOPT_HTTPHEADER, $headers );
 		curl_setopt ( $ch, CURLOPT_POST, 1 );
 		curl_setopt ( $ch, CURLOPT_POSTFIELDS, $xml );
-		
+
 		$response = curl_exec ( $ch );
 		curl_close ( $ch );
-		
+
 		$responsedom = new DomDocument ();
 		$responsedom->loadXML ( $response );
-		
+
 		$cipherValues = $responsedom->getElementsbyTagName ( "CipherValue" );
 		$token1 = $cipherValues->item ( 0 )->textContent;
 		$token2 = $cipherValues->item ( 1 )->textContent;
-		
+
 		$keyIdentiferValues = $responsedom->getElementsbyTagName ( "KeyIdentifier" );
 		$keyIdentifer = $keyIdentiferValues->item ( 0 )->textContent;
-		
+
 		$x509IssuerNames = $responsedom->getElementsbyTagName ( "X509IssuerName" );
 		$x509IssuerName = $x509IssuerNames->item ( 0 )->textContent;
-		
+
 		$x509SerialNumbers = $responsedom->getElementsbyTagName ( "X509SerialNumber" );
 		$x509SerialNumber = $x509SerialNumbers->item ( 0 )->textContent;
-		
+
 		$binarySecrets = $responsedom->getElementsbyTagName ( "BinarySecret" );
 		$binarySecret = $binarySecrets->item ( 0 )->textContent;
-		
+
 		$created = gmdate ( 'Y-m-d\TH:i:s.u\Z', strtotime ( '-1 minute', $now ) );
 		$expires = gmdate ( 'Y-m-d\TH:i:s.u\Z', strtotime ( '+5 minute', $now ) );
 		$timestamp = "<u:Timestamp xmlns:u=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd\" u:Id=\"_0\"><u:Created>" . $created . "</u:Created><u:Expires>" . $expires . "</u:Expires></u:Timestamp>";
-		
+
 		$hashedDataBytes = sha1 ( $timestamp, true );
 		$digestValue = base64_encode ( $hashedDataBytes );
-		
+
 		$signedInfo = "<SignedInfo xmlns=\"http://www.w3.org/2000/09/xmldsig#\"><CanonicalizationMethod Algorithm=\"http://www.w3.org/2001/10/xml-exc-c14n#\"></CanonicalizationMethod><SignatureMethod Algorithm=\"http://www.w3.org/2000/09/xmldsig#hmac-sha1\"></SignatureMethod><Reference URI=\"#_0\"><Transforms><Transform Algorithm=\"http://www.w3.org/2001/10/xml-exc-c14n#\"></Transform></Transforms><DigestMethod Algorithm=\"http://www.w3.org/2000/09/xmldsig#sha1\"></DigestMethod><DigestValue>" . $digestValue . "</DigestValue></Reference></SignedInfo>";
 		$binarySecretBytes = base64_decode ( $binarySecret );
 		$hmacHash = hash_hmac ( "sha1", $signedInfo, $binarySecretBytes, true );
 		$signatureValue = base64_encode ( $hmacHash );
-		
+
 		$tokenExpiresValues = $responsedom->getElementsbyTagName ( "Expires" );
 		$tokenExpires = $tokenExpiresValues->item ( 0 )->textContent;
-		
+
 		$authHeader = new CrmAuthenticationHeader ();
 		$authHeader->Expires = $tokenExpires;
 		$authHeader->Header = $this->CreateSoapHeaderOnPremise ( $url, $keyIdentifer, $token1, $token2, $x509IssuerName, $x509SerialNumber, $signatureValue, $digestValue, $created, $expires );
-		
+
 		return $authHeader;
 	}
-	
+
 	/**
 	 * Gets a CRM On Premise (IFD) SOAP header.
-	 * 
+	 *
 	 * @return String SOAP Header XML.
 	 * @param String $url
 	 *        	The Url of the CRM On Premise (IFD) organization (https://org.domain.com).
@@ -364,13 +364,13 @@ class CrmAuth {
 		$xml .= "</Signature>";
 		$xml .= "</o:Security>";
 		$xml .= "</s:Header>";
-		
+
 		return $xml;
 	}
-	
+
 	/**
 	 * Gets the name of the AD FS server CRM uses for authentication.
-	 * 
+	 *
 	 * @return String The AD FS server url.
 	 * @param String $url
 	 *        	The Url of the CRM On Premise (IFD) organization (https://org.domain.com).
@@ -381,19 +381,19 @@ class CrmAuth {
 		curl_setopt ( $ch, CURLOPT_RETURNTRANSFER, 1 );
 		curl_setopt ( $ch, CURLOPT_TIMEOUT, 60 );
 		curl_setopt ( $ch, CURLOPT_SSL_VERIFYPEER, false );
-		
+
 		$response = curl_exec ( $ch );
 		curl_close ( $ch );
-		
+
 		$responsedom = new DomDocument ();
 		$responsedom->loadXML ( $response );
-		
+
 		$identifiers = $responsedom->getElementsbyTagName ( "Identifier" );
 		$identifier = $identifiers->item ( 0 )->textContent;
-		
+
 		return str_replace ( "http://", "https://", $identifier );
 	}
-	
+
 	// http://stackoverflow.com/questions/18206851/com-create-guid-function-got-error-on-server-side-but-works-fine-in-local-usin
 	function getGUID() {
 		if (function_exists ( 'com_create_guid' )) {
@@ -408,4 +408,3 @@ substr ( $charid, 0, 8 ) . $hyphen . substr ( $charid, 8, 4 ) . $hyphen . substr
 		}
 	}
 }
-
