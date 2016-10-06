@@ -36,11 +36,11 @@ $url = $_POST['instance_url'];
 $username = $_POST['username'];
 $password = $_POST["password"];
 
+$password = str_replace("&", "&amp;", $password);
 $password = str_replace('"', "&quot;", $password);
 $password = str_replace("'", "&apos;", $password);
 $password = str_replace('<', "&lt;", $password);
 $password = str_replace('>', "&gt;", $password);
-$password = str_replace("&", "&amp;", $password);
 
 $crmAuth = new CrmAuth();
 
