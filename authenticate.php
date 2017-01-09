@@ -19,6 +19,10 @@ function WhoAmI($authHeader, $url) {
 	$responsedom = new DomDocument ();
 	$responsedom->loadXML ( $response );
 
+	return $responsedom;
+}
+
+function findUserId($responsedom){
 	$values = $responsedom->getElementsbyTagName ( "KeyValuePairOfstringanyType" );
 
 	foreach ( $values as $value ) {
@@ -43,22 +47,26 @@ $password = str_replace('<', "&lt;", $password);
 $password = str_replace('>', "&gt;", $password);
 
 $crmAuth = new CrmAuth();
+$response = array();
 
 $authHeader = $crmAuth->GetHeaderOnline ($username, $password, $url);
-$userid = WhoAmI ( $authHeader, $url );
+$responsedom = WhoAmI ( $authHeader, $url );
+$userid = findUserId($responsedom);
+
+$response['onlineXMLResp'] = $responsedom->saveXML();
 
 if ($userid == null) {
 	$authHeader = $crmAuth->GetHeaderOnPremise($username, $password, $url);
-	$userid = WhoAmI ( $authHeader, $url );
+	$responsedom = WhoAmI ( $authHeader, $url );
+	$userid = findUserId($responsedom);
 }
 
-if ($userid == null) {
-	print "{}";
+$response['onPremXMLResp'] = $responsedom->saveXML();
+
+if ($userid == null){} else{
+	$response['userid'] = $userid;
 }
-else {
-	print '{"userid": "'.$userid.'"}';
-}
-return;
+print json_encode($response);
 
 
 ?>
