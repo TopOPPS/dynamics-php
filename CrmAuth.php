@@ -181,7 +181,11 @@ class CrmAuth {
 	 */
 	function GetHeaderOnPremise($username, $password, $url) {
 		$url .= (substr ( $url, - 1 ) == '/' ? '' : '/');
-		$adfsUrl = $this->GetADFS ( $url );
+		$adfsResults = $this->GetADFS ( $url );
+		if (array_key_exists('error', $adfsResults)) {
+			return $adfsResults;
+		}
+		$adfsUrl = $adfsResults['url'];
 		$now = $_SERVER ['REQUEST_TIME'];
 		$urnAddress = $url . "XRMServices/2011/Organization.svc";
 		$usernamemixed = $adfsUrl . "/13/usernamemixed";
@@ -391,7 +395,12 @@ class CrmAuth {
 		$identifiers = $responsedom->getElementsbyTagName ( "Identifier" );
 		$identifier = $identifiers->item ( 0 )->textContent;
 
-		return str_replace ( "http://", "https://", $identifier );
+		$results = array('url' => '');
+		$results['url'] = str_replace ( "http://", "https://", $identifier );
+		if (!$identifier) {
+			$results['error'] = $response;
+		}
+		return $results;
 	}
 
 	// http://stackoverflow.com/questions/18206851/com-create-guid-function-got-error-on-server-side-but-works-fine-in-local-usin
