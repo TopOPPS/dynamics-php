@@ -16,10 +16,8 @@ function WhoAmI($authHeader, $url) {
 
 	$executeSoap = new CrmExecuteSoap ();
 	$response = $executeSoap->ExecuteSOAPRequest ( $authHeader, $xml, $url );
-	$responsedom = new DomDocument ();
-	$responsedom->loadXML ( $response );
 
-	return $responsedom;
+	return $response;
 }
 
 function findUserId($responsedom){
@@ -47,10 +45,12 @@ $password = str_replace('<', "&lt;", $password);
 $password = str_replace('>', "&gt;", $password);
 
 $crmAuth = new CrmAuth();
-$response = array();
+$finalresponse = array();
 
 $authHeader = $crmAuth->GetHeaderOnline ($username, $password, $url);
-$responsedom = WhoAmI ( $authHeader, $url );
+$response = WhoAmI ( $authHeader, $url );
+$responsedom = new DomDocument ();
+$responsedom->loadXML ( $response );
 $userid = findUserId($responsedom);
 
 $response['onlineXMLResp'] = $responsedom->saveXML();
@@ -62,16 +62,18 @@ if ($userid == null) {
 		print json_encode($response);
 		die;
 	}
-	$responsedom = WhoAmI ( $authHeader, $url );
+	$response = WhoAmI ( $authHeader, $url );
+	$responsedom = new DomDocument ();
+	$responsedom->loadXML ( $response );
 	$userid = findUserId($responsedom);
 }
 
-$response['onPremXMLResp'] = $responsedom->saveXML();
+$finalresponse['onPremXMLResp'] = $response;
 
 if ($userid == null){} else{
-	$response['userid'] = $userid;
+	$finalresponse['userid'] = $userid;
 }
-print json_encode($response);
+print json_encode($finalresponse);
 
 
 ?>
