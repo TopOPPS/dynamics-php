@@ -16,15 +16,14 @@ class CrmExecuteSoap {
 		$xml .= $authHeader->Header;
 		$xml .= $request;
 		$xml .= "</s:Envelope>";
-		
+
 		$headers = array (
-				"POST " . "/Organization.svc" . " HTTP/1.1",
-				"Host: " . str_replace ( "https://", "", $url ),
+				"POST " . parse_url($url)['path']."/Organization.svc" . " HTTP/1.1",
+				"Host: " . parse_url($url)['host'],
 				'Connection: Keep-Alive',
 				"Content-type: application/soap+xml; charset=UTF-8",
-				"Content-length: " . strlen ( $xml ) 
+				"Content-length: " . strlen ( $xml )
 		);
-		
 		$cURL = curl_init ();
 		curl_setopt ( $cURL, CURLOPT_URL, $url . "/XRMServices/2011/Organization.svc" );
 		curl_setopt ( $cURL, CURLOPT_RETURNTRANSFER, 1 );
@@ -34,10 +33,10 @@ class CrmExecuteSoap {
 		curl_setopt ( $cURL, CURLOPT_HTTPHEADER, $headers );
 		curl_setopt ( $cURL, CURLOPT_POST, 1 );
 		curl_setopt ( $cURL, CURLOPT_POSTFIELDS, $xml );
-		
+
 		$response = curl_exec ( $cURL );
 		curl_close ( $cURL );
-		
+
 		return $response;
 	}
 }
